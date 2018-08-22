@@ -1,0 +1,9 @@
+{
+  "extends": "airbnb/base",
+  "parser": "babel-eslint",
+  "installedESLint": true,
+  "rules": {
+    "indent": ["error", 4],
+    "max-len": ["error",200],
+  }
+}
