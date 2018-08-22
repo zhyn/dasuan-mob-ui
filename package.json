@@ -46,7 +46,7 @@
     "mb": "export PRODUCTION=1 && webpack --progress --hide-modules",
     "build": "set PRODUCTION=1 && webpack --progress --hide-modules",
     "build:com": "set PRODUCTION=2 && webpack --progress --hide-modules",
-    "dev": "webpack-dev-server --progress --profile --colors --inline",
+    "dev": "webpack-dev-server --progress --profile --colors --inline --port 8080",
     "port": "webpack-dev-server --progress --colors --inline --port 9090 ",
     "hot": "webpack-dev-server --progress --colors --inline --hot",
     "ip": "webpack-dev-server --progress --profile --colors --inline --host=10.19.1.35  --port 9003"
