@@ -5,26 +5,26 @@ var path = require('path')
 var buildPath = './' + buildFolder + '/'
 var folder_exists = fs.existsSync(buildPath)
 
-// if (!folder_exists) {
-//     fs.mkdirSync(buildFolder)
-// }else {
-//     var dirList = fs.readdirSync(buildPath)
-//     dirList.forEach(function (fileName) {
-//         fs.unlinkSync(buildPath + fileName)
-//     })
-//     console.log("clearing " + buildPath)
-// }
+if (!folder_exists) {
+    fs.mkdirSync(buildFolder)
+}else {
+    var dirList = fs.readdirSync(buildPath)
+    dirList.forEach(function (fileName) {
+        fs.unlinkSync(buildPath + fileName)
+    })
+    console.log("clearing " + buildPath)
+}
 
-// readfile
-// 先把index.html里面关于style和js的hash值都删除掉，避免在使用 npm run dev 的时候，路径还是压缩后的路径
-// fs.readFile('index.html','utf-8',function (err, data) {
-//     if (err) {
-//         console.log("clear hash error")
-//     } else {
-//         var devhtml = data.replace(/((?:href|src)="[^"]+\.)(\w{20}\.)(js|css)/g, '$1$3')
-//         fs.writeFileSync('index.html',devhtml)
-//     }
-// })
+//readfile
+//先把index.html里面关于style和js的hash值都删除掉，避免在使用 npm run dev 的时候，路径还是压缩后的路径
+fs.readFile('index.html','utf-8',function (err, data) {
+    if (err) {
+        console.log("clear hash error")
+    } else {
+        var devhtml = data.replace(/((?:href|src)="[^"]+\.)(\w{20}\.)(js|css)/g, '$1$3')
+        fs.writeFileSync('index.html',devhtml)
+    }
+})
 
 var webpack = require('webpack')
 
@@ -114,14 +114,14 @@ switch(production){
                 template: 'index.tpl',
                 inject: true
             }),
-            new CleanWebpackPlugin(
-                ['lib/*'],　 //匹配删除的文件
-                {
-                    root: __dirname,       　　　　　　　　　　//根目录
-                    verbose:  true,        　　　　　　　　　　//开启在控制台输出信息
-                    dry:      false        　　　　　　　　　　//启用删除文件
-                }
-            )
+            // new CleanWebpackPlugin(
+            //     ['lib/*'],　 //匹配删除的文件
+            //     {
+            //         root: __dirname,       　　　　　　　　　　//根目录
+            //         verbose:  true,        　　　　　　　　　　//开启在控制台输出信息
+            //         dry:      false        　　　　　　　　　　//启用删除文件
+            //     }
+            // )
         ]
 
         devServer = {}
@@ -164,15 +164,7 @@ switch(production){
                 filename: '../index.html',
                 template: 'index.tpl',
                 inject: true
-            }),
-            new CleanWebpackPlugin(
-                ['lib/*'],　 //匹配删除的文件
-                {
-                    root: __dirname,       　　　　　　　　　　//根目录
-                    verbose:  true,        　　　　　　　　　　//开启在控制台输出信息
-                    dry:      false        　　　　　　　　　　//启用删除文件
-                }
-            )
+            })
         ]
 
         devServer = {}
