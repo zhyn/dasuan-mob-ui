@@ -51,7 +51,7 @@
   },
   "scripts": {
     "mb": "export PRODUCTION=1 && webpack --progress --hide-modules",
-    "build": "export PRODUCTION=1 && webpack --progress --hide-modules --mode production",
+    "build": "export PRODUCTION=1 && webpack --progress  --hide-modules --mode production",
     "build:com": "webpack --progress --hide-modules --mode dasuan-mob-ui",
     "dev": "export PRODUCTION=0 && webpack-dev-server --progress --profile --colors --inline --mode development",
     "port": "webpack-dev-server --progress --colors --inline --port 9090 ",

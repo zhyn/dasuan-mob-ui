@@ -30,8 +30,6 @@ var webpack = require('webpack')
 
 /**
  版本控制
- package.json中的
- "html-webpack-plugin": "^1.6.2",
  模块是把生成的带有md5戳的文件，插入到index.html中。
  通过index.tpl模板，生成 index.html
  */
@@ -114,14 +112,6 @@ switch(production){
                 template: 'index.tpl',
                 inject: true
             }),
-            // new CleanWebpackPlugin(
-            //     ['lib/*'],　 //匹配删除的文件
-            //     {
-            //         root: __dirname,       　　　　　　　　　　//根目录
-            //         verbose:  true,        　　　　　　　　　　//开启在控制台输出信息
-            //         dry:      false        　　　　　　　　　　//启用删除文件
-            //     }
-            // )
         ]
 
         devServer = {}
@@ -135,7 +125,7 @@ switch(production){
         }
 
         output = {
-            path: path.join(__dirname, buildFolder),
+            path: __dirname  +  '/lib', //path.join(__dirname, buildFolder),
             publicPath: '/' + buildFolder + '/',
             filename: '[name].[chunkhash].js'
         }
@@ -200,7 +190,6 @@ module.exports = {
     entry: entry,
     output: output,
     plugins: plugins,
-    // 代理,将所有API接口都通过代理,调试用
     devtool: devtool,
     devServer: devServer,
     optimization: {
