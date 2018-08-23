@@ -5,121 +5,28 @@ var path = require('path')
 var buildPath = './' + buildFolder + '/'
 var folder_exists = fs.existsSync(buildPath)
 
-if (!folder_exists) {
-    fs.mkdirSync(buildFolder)
-}
-else {
-    var dirList = fs.readdirSync(buildPath)
-    dirList.forEach(function (fileName) {
-        fs.unlinkSync(buildPath + fileName)
-    })
-    console.log("clearing " + buildPath)
-}
+// if (!folder_exists) {
+//     fs.mkdirSync(buildFolder)
+// }else {
+//     var dirList = fs.readdirSync(buildPath)
+//     dirList.forEach(function (fileName) {
+//         fs.unlinkSync(buildPath + fileName)
+//     })
+//     console.log("clearing " + buildPath)
+// }
 
 // readfile
 // 先把index.html里面关于style和js的hash值都删除掉，避免在使用 npm run dev 的时候，路径还是压缩后的路径
-fs.readFile('index.html','utf-8',function (err, data) {
-    if (err) {
-        console.log("clear hash error")
-    } else {
-        var devhtml = data.replace(/((?:href|src)="[^"]+\.)(\w{20}\.)(js|css)/g, '$1$3')
-        fs.writeFileSync('index.html',devhtml)
-    }
-})
+// fs.readFile('index.html','utf-8',function (err, data) {
+//     if (err) {
+//         console.log("clear hash error")
+//     } else {
+//         var devhtml = data.replace(/((?:href|src)="[^"]+\.)(\w{20}\.)(js|css)/g, '$1$3')
+//         fs.writeFileSync('index.html',devhtml)
+//     }
+// })
 
 var webpack = require('webpack')
-
-//自动打开浏览器
-var OpenBrowserPlugin = require('open-browser-webpack-plugin');
-
-//打印的日志
-var ProgressBarPlugin = require('progress-bar-webpack-plugin');
-
-// 检测重用模块
-var CommonsChunkPlugin = webpack.optimize.CommonsChunkPlugin
-
-// 独立样式文件
-const ExtractTextPlugin = require('extract-text-webpack-plugin')
-
-// 在命令行 输入  “PRODUCTION=1 webpack --progress” 就会打包压缩，并且注入md5戳 到 d.html里面
-var production = process.env.PRODUCTION
-
-
-if(production != 2) {
-    var plugins = [
-        new webpack.LoaderOptionsPlugin({
-            minimize: true
-        }),
-        // 会将所有的样式文件打包成一个单独的style.css
-        new ExtractTextPlugin({
-            filename: production ? 'style.[chunkhash].css' : 'style.css',
-            disable: false,
-            allChunks: true
-        }),
-        // 自动分析重用模块并且打包单独文件
-        new CommonsChunkPlugin({
-            name: 'vendor',
-            filename: production ? 'vendor.[hash].js' : 'vendor.js'
-        }),
-        function () {
-            return this.plugin('done', function (stats) {
-                var content
-                //这里可以拿到hash值   参考：http://webpack.github.io/docs/long-term-caching.html
-                content = JSON.stringify(stats.toJson().assetsByChunkName, null, 2)
-                console.log('版本是：'+JSON.stringify(stats.toJson().hash))
-                return fs.writeFileSync(buildFolder + '/assets.json', content)
-            })
-        }
-    ] 
-
-    if(!production) plugins.push(new OpenBrowserPlugin())
-}else {
-
-    //UI
-    var plugins = [
-        new ProgressBarPlugin(),
-        new ExtractTextPlugin('style.css'),
-        new webpack.LoaderOptionsPlugin({
-          minimize: true
-        })
-      ]
-}
-
-
-
-
-// 发布编译时,压缩,版本控制
-var devtool = false,   // 是否开启source-map
-    devServer = {}   // 代理设置
-if (process.env.PRODUCTION) {
-    console.log('压缩...')
-    // 压缩
-    plugins.push(new webpack.optimize.UglifyJsPlugin({
-        beautify: false,
-        comments: false,
-        compress: {
-            warnings: false,
-            drop_debugger: true,
-            drop_console: true,
-            collapse_vars: true,
-            reduce_vars: true
-        }
-    }))
-    devtool = '#source-map'   // 生产环境不开启source-map
-    devServer = {}   // 代理为空
-} else {
-    console.log('开启代理...')
-    devtool = '#eval-source-map'
-    devServer = {
-        historyApiFallback: true,
-        host: 'localhost',
-        proxy: {
-            '/Api/*': {
-                target: '',
-            }
-        },
-    }
-}
 
 /**
  版本控制
@@ -130,24 +37,172 @@ if (process.env.PRODUCTION) {
  */
 var HtmlWebpackPlugin = require('html-webpack-plugin')
 
-var entry = production == 2 ? {
-        index: './src/static/common.js'
-    }:{
-        common: ['vue', 'vue-router'],
-        build: './src/app.js'    
-    }
 
-var output = production == 2 ? {
-        path: path.join(__dirname, buildFolder),
-        publicPath: '/' + buildFolder + '/',
-        filename: 'index.js',
-        chunkFilename: '[name].js',
-        libraryTarget: 'commonjs2'
-    }:{
-        path: path.join(__dirname, buildFolder),
-        publicPath: '/' + buildFolder + '/',
-        filename: production ? '[name].[chunkhash].js' : '[name].js' //"build.[hash].js"//[hash]MD5戳   解决html的资源的定位可以使用 webpack提供的HtmlWebpackPlugin插件来解决这个问题  见：http://segmentfault.com/a/1190000003499526 资源路径切换,
-    }
+var CleanWebpackPlugin = require('clean-webpack-plugin');
+
+//vue-loader
+var VueLoaderPlugin = require('vue-loader/lib/plugin');
+
+//打印的日志
+var ProgressBarPlugin = require('progress-bar-webpack-plugin');
+
+//压缩js
+var UglifyJsPlugin = require('uglifyjs-webpack-plugin');
+
+//压缩css
+var OptimizeCSSPlugin = require('optimize-css-assets-webpack-plugin')
+
+//提取CSS到单独文件
+var MiniCssExtractPlugin = require('mini-css-extract-plugin')
+
+// 分离JS文件
+var SplitChunksPlugin = webpack.optimize.SplitChunksPlugin
+
+var RuntimeChunkPlugin = webpack.optimize.RuntimeChunkPlugin
+
+//热加载
+var HotModuleReplacementPlugin = webpack.HotModuleReplacementPlugin
+
+//生成稳定的ChunkId
+var NamedChunksPlugin = webpack.NamedChunksPlugin
+
+// 在命令行 输入  “PRODUCTION=1 webpack --progress” 就会打包压缩，并且注入md5戳 到 d.html里面
+var production = process.env.PRODUCTION
+
+
+var plugins = []
+var entry 
+var output
+
+
+switch(production){
+    case '0':
+        console.log('开发环境')
+
+        entry = {
+            build: './src/app.js'    
+        }
+
+        output = {
+            path: path.join(__dirname, buildFolder),
+            publicPath: '/' + buildFolder + '/',
+            filename: '[name].js'
+        }
+
+        plugins= [
+            new VueLoaderPlugin(),
+            new NamedChunksPlugin(),
+            new MiniCssExtractPlugin({
+                filename: 'style.css'
+            }),
+            new SplitChunksPlugin({
+                chunks: 'initial',
+                cacheGroups: {
+                    vendor: {
+                        test: /node_modules\//,
+                        name: 'vendor',
+                        priority: 10,
+                        enforce: true
+                    }
+                }
+            }),
+            new RuntimeChunkPlugin({
+                "name": "manifest"
+            }),
+            new HtmlWebpackPlugin({
+                filename: '../index.html',
+                template: 'index.tpl',
+                inject: true
+            }),
+            new CleanWebpackPlugin(
+                ['lib/*'],　 //匹配删除的文件
+                {
+                    root: __dirname,       　　　　　　　　　　//根目录
+                    verbose:  true,        　　　　　　　　　　//开启在控制台输出信息
+                    dry:      false        　　　　　　　　　　//启用删除文件
+                }
+            )
+        ]
+
+        devServer = {}
+        devtool = '#eval-source-map'
+
+      break;
+    case '1':
+        console.log('生产环境')
+        entry = {
+            build: './src/app.js',
+        }
+
+        output = {
+            path: path.join(__dirname, buildFolder),
+            publicPath: '/' + buildFolder + '/',
+            filename: '[name].[chunkhash].js'
+        }
+
+        plugins = [
+            new VueLoaderPlugin(),
+            new NamedChunksPlugin(),
+            new MiniCssExtractPlugin({
+                filename: 'style.[chunkhash].css'
+            }),
+            new SplitChunksPlugin({
+                chunks: 'initial',
+                cacheGroups: {
+                    vendor: {
+                        test: /node_modules\//,
+                        name: 'vendor',
+                        priority: 10,
+                        enforce: true
+                    }
+                }
+            }),
+            new RuntimeChunkPlugin({
+                "name": "manifest"
+            }),
+            new HtmlWebpackPlugin({
+                filename: '../index.html',
+                template: 'index.tpl',
+                inject: true
+            }),
+            new CleanWebpackPlugin(
+                ['lib/*'],　 //匹配删除的文件
+                {
+                    root: __dirname,       　　　　　　　　　　//根目录
+                    verbose:  true,        　　　　　　　　　　//开启在控制台输出信息
+                    dry:      false        　　　　　　　　　　//启用删除文件
+                }
+            )
+        ]
+
+        devServer = {}
+        devtool = '#source-map'
+      break;
+    case '2':
+        entry = {
+            index: './src/static/common.js'
+        }
+
+        output = {
+            path: path.join(__dirname, buildFolder),
+            publicPath: '/' + buildFolder + '/',
+            filename: 'index.js',
+            chunkFilename: '[name].js',
+            libraryTarget: 'commonjs2'
+        }
+
+        plugins = [
+            new ProgressBarPlugin(),
+            new ExtractTextPlugin('style.css'),
+            new webpack.LoaderOptionsPlugin({
+              minimize: true
+            })
+          ]
+
+        devServer = {}
+        devtool = '#source-map'
+      break;
+}
 
 module.exports = {
     entry: entry,
@@ -156,41 +211,35 @@ module.exports = {
     // 代理,将所有API接口都通过代理,调试用
     devtool: devtool,
     devServer: devServer,
+    optimization: {
+        minimizer: [
+            new UglifyJsPlugin({
+                uglifyOptions: {
+                    compress: false
+                }
+            }),
+            new OptimizeCSSPlugin({}),
+        ]
+    },
     resolve: {
         extensions: ['.js', '.vue', '.json'],
         modules: [
             path.join(__dirname, 'node_modules')
         ],
         alias: {
+            vue$: "vue/dist/vue.runtime.min.js",
             'src': path.resolve(__dirname, 'src')
         }
     },
     module: {
         rules: [
-            {
-                test: /\.vue$/,
-                loader: 'vue-loader'
-            },
-            {
-                test: /\.js$/,
-                loader: 'babel-loader',
-                include: [path.join(__dirname, 'src')]
-            },
-            {
-                test: /\.css$/,
-                loader: "style-loader!css-loader"
-            },
-            {
-                test: /\.(png|jpe?g|gif)(\?.*)?$/,
-                loader: 'url-loader',
-                options: {
-                    limit: 10000
-                }
-            },
-            {
-                test: /\.(woff|woff2?|svg|eot|ttf|otf)(\?.*)?$/,
-                loader: 'url-loader'
-            }
+            {test: /\.html$/,use:['html-loader']},
+            {test: /\.vue$/,use:['vue-loader']},
+            {test: /\.js$/,use: ['babel-loader'],include: [path.join(__dirname, 'src')]},
+            {test: /\.css$/,use: ['vue-style-loader','css-loader','sass-loader']},
+            {test: /\.scss$/,use: ['vue-style-loader','css-loader','sass-loader']},
+            {test: /\.(png|jpe?g|gif)(\?.*)?$/,use: ['url-loader?limit=10000']},
+            {test: /\.(woff|woff2?|svg|eot|ttf|otf)(\?.*)?$/,use:['url-loader'],}
         ]
     }
 }

@@ -1,5 +1,0 @@
-{
-  "build": "build.js",
-  "common": "common.js",
-  "vendor": "vendor.js"
-}

@@ -11,9 +11,9 @@ export default {
     },
     components: {},
     computed: {},
-    watch: {},
-    created(){},
-    mounted(){},
+    // watch: {},
+    // created(){},
+    // mounted(){},
     methods: {},
 }
 </script>

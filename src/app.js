@@ -6,8 +6,8 @@ import routes from './routes'                    //所有routes
 import './assets/css/normalize.css'  // normalize重置浏览器样式
 
 
-import demo from '../src/static/common.js'
-Vue.use(demo)
+// import demo from '../src/static/common.js'
+// Vue.use(demo)
 
 
 
